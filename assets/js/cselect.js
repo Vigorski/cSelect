@@ -1,7 +1,7 @@
 export default class CSelect {
-	constructor(select, options) {
-		this.animated = options?.animated ?? true;
-		this.search = options?.search ?? true;
+	constructor(select, features) {
+		this.animated = features?.animated ?? true;
+		this.search = features?.search ?? true;
 		this.select = select;
 		this.options = getFormattedOptions(select.children);
 		this.cSelect = document.createElement('div');
@@ -13,7 +13,7 @@ export default class CSelect {
 		init(this);
 		addEvents(this);
 
-		// make select focusable but not dropdown
+		// make select focusable, but not dropdown
 		this.cSelect.tabIndex = 0;
 		this.cSelectDrop.tabIndex = -1;
 		this.cSelectResults.tabIndex = -1;
@@ -51,6 +51,8 @@ export default class CSelect {
 		const animatedDropHeight = this.animated ? `${this.cSelectResults.scrollHeight}px` : 'auto';
 		this.cSelectDrop.classList[type]('cSelect__drop--open');
 
+		// #TODO: fix tab focus (search remains focusable)
+
 		switch (type) {
 			case DROP_TOGGLE:
 				this.cSelectDrop.style.height = isOpen ? 0 : animatedDropHeight;
@@ -81,6 +83,10 @@ const DROP_OPEN = 'add';
 const DROP_CLOSE = 'remove';
 const DROP_TOGGLE = 'toggle';
 
+// OPERANDS FOR SEARCHING FOR AVAILABLE OPTIONS
+const OPERAND_ADD = 'add';
+const OPERAND_SUBTRACT = 'subtract';
+
 const init = (_this) => {
 	const cSelectLabel = document.createElement('span');
 	const cSelectLabelArrow = document.createElement('div');
@@ -95,24 +101,7 @@ const init = (_this) => {
 	cSelectLabel.innerText = _this.selectedOption.label;
 
 	// Append children label, arrow + options
-	_this.options.forEach((item) => {
-		const option = document.createElement('li');
-		option.classList.add('cSelect__option');
-		option.classList.toggle('selected', item.selected);
-		option.classList.toggle('disabled', item.disabled);
-		option.dataset.value = item.value;
-		option.innerText = item.label;
-		_this.cSelectResults.appendChild(option);
-
-		// update selected options here
-		option.addEventListener('click', function () {
-			// prevent selecting disabled options
-			if (item.disabled) return;
-			_this.selectValue(item);
-			_this.toggleDropdown(DROP_CLOSE);
-		});
-	});
-
+	initOptions(_this);
 	_this.cSelectSingle.appendChild(cSelectLabel);
 	_this.cSelectSingle.appendChild(cSelectLabelArrow);
 	_this.cSelect.appendChild(_this.cSelectSingle);
@@ -139,6 +128,27 @@ const initSearch = (_this) => {
 	_this.cSelectDrop.appendChild(_this.cSelectSearch);
 };
 
+const initOptions = (_this) => {
+	_this.options.forEach((item) => {
+		if (item.hidden) return;
+		const option = document.createElement('li');
+		option.classList.add('cSelect__option');
+		option.classList.toggle('selected', item.selected);
+		option.classList.toggle('disabled', item.disabled);
+		option.dataset.value = item.value;
+		option.innerText = item.label;
+		_this.cSelectResults.appendChild(option);
+
+		// update selected options here
+		option.addEventListener('click', function () {
+			// prevent selecting disabled options
+			if (item.disabled) return;
+			_this.selectValue(item);
+			_this.toggleDropdown(DROP_CLOSE);
+		});
+	});
+};
+
 const getFormattedOptions = (options) => {
 	return [...options].map((optionEle) => {
 		return {
@@ -146,6 +156,7 @@ const getFormattedOptions = (options) => {
 			label: optionEle.label,
 			selected: optionEle.selected,
 			disabled: optionEle.disabled,
+			hidden: false,
 			element: optionEle,
 		};
 	});
@@ -176,27 +187,20 @@ const addEvents = (_this) => {
 		}, 0);
 	});
 
-	_this.cSelect.addEventListener('keydown', (e) => {
-		const currentIndex = _this.selectedOptionIndex;
-
+	_this.cSelect.addEventListener('keyup', (e) => {
 		switch (e.keyCode) {
 			case KEY_UP:
-				// Skip disabled options
-				const prevIndex = _this.options[currentIndex - 1];
-				const prevStep = prevIndex?.disabled ? 2 : 1;
-				const prevOption = _this.options[currentIndex - prevStep];
+				const prevOption = getAvailableOption(_this, OPERAND_SUBTRACT);
 				prevOption && _this.selectValue(prevOption);
 				_this.toggleDropdown(DROP_OPEN);
 				break;
 			case KEY_DOWN:
-				// Skip disabled options
-				const nextIndex = _this.options[currentIndex + 1];
-				const nextStep = nextIndex?.disabled ? 2 : 1;
-				const nextOption = _this.options[currentIndex + nextStep];
+				const nextOption = getAvailableOption(_this, OPERAND_ADD);
 				nextOption && _this.selectValue(nextOption);
 				_this.toggleDropdown(DROP_OPEN);
 				break;
 			case KEY_SPACE:
+				if (document.activeElement === searchInput) break;
 				_this.toggleDropdown(DROP_TOGGLE);
 				break;
 			case KEY_ENTER:
@@ -204,7 +208,27 @@ const addEvents = (_this) => {
 				_this.toggleDropdown(DROP_CLOSE);
 				break;
 			default:
+				searchQuery(_this, searchInput);
 				break;
 		}
 	});
+};
+
+function getAvailableOption(_this, operand) {
+	const currentIndex = _this.selectedOptionIndex;
+	let prevIndex = null;
+
+	for (let i = 1; i < _this.options.length; i++) {
+		if (operand === OPERAND_ADD) prevIndex = _this.options[currentIndex + i];
+		if (operand === OPERAND_SUBTRACT) prevIndex = _this.options[currentIndex - i];
+		if (prevIndex?.disabled || prevIndex?.hidden) continue;
+		return prevIndex;
+	}
+}
+
+const searchQuery = (_this, searchInput) => {
+	const results = [];
+
+	const ins = _this.options[1].label.indexOf(searchInput.value);
+	console.log(ins);
 };
