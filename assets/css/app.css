@@ -1,0 +1,194 @@
+html,
+body {
+	margin: 0;
+	height: 100%;
+}
+
+body {
+	background: linear-gradient(135deg, #f7cac9 0%, #92a8d1 100%) no-repeat;
+	font-family: 'Arial', sans-serif;
+	letter-spacing: 1px;
+	color: #444;
+	box-sizing: border-box;
+}
+
+ul,
+ol {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+.container {
+	max-width: 1280px;
+	margin: 0 auto;
+	padding: 0 20px;
+}
+
+form {
+	display: flex;
+	flex-direction: column;
+}
+
+.form-group {
+	margin: 30px 0;
+}
+
+input {
+	font-family: 'Arial', sans-serif;
+	letter-spacing: 1px;
+	color: #444;
+}
+
+.custom-select-wrapper label {
+	display: block;
+	margin: 20px 0;
+}
+
+/* ///////////////////////////////////////////////////// */
+.cSelect {
+	position: relative;
+}
+
+.cSelect * {
+	box-sizing: border-box;
+}
+
+.cSelect:focus {
+	outline: 2px solid #2686f4;
+}
+
+.cSelect__default {
+	display: flex;
+	align-items: center;
+	border-radius: 3px;
+	font-size: 14px;
+	height: 50px;
+	padding: 16px 2em;
+	background: #fff;
+	box-shadow: 0px 1em 2em -1.5em rgba(0, 0, 0, 0.5);
+	cursor: pointer;
+}
+
+.cSelect__label-arrow {
+	position: relative;
+	margin-left: auto;
+}
+
+.cSelect__label-arrow::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	right: 50%;
+	width: 8px;
+	height: 8px;
+	border-top: 2px solid #999;
+	border-right: 2px solid #999;
+	transform: translateY(-65%) rotate(135deg);
+}
+
+.cSelect__drop {
+	position: absolute;
+	width: 100%;
+	height: 0;
+	max-height: 300px;
+	left: 0;
+	top: 57px;
+	transition: height, 0.25s;
+}
+
+.cSelect__results {
+	height: 100%;
+	overflow-y: auto;
+}
+
+.cSelect__search {
+	position: relative;
+	height: 0;
+	transition: height, 0.25s;
+	overflow: hidden;
+	outline: none;
+}
+
+.cSelect__drop--open .cSelect__search {
+	height: 50px;
+}
+
+.cSelect__search-input {
+	width: 100%;
+	padding: 16px 2em;
+	background-color: #fff;
+	border: 2px solid transparent;
+	font-size: 14px;
+	height: 50px;
+	border: none;
+}
+
+.cSelect__search-input:focus {
+	border: 2px solid #2686f4;
+}
+
+.cSelect__search-icon {
+	position: absolute;
+	right: 1.75em;
+	top: 50%;
+	transform: translateY(-50%) rotate(-45deg);
+	width: 16px;
+	height: 16px;
+}
+
+.cSelect__search-icon::before,
+.cSelect__search-icon::after {
+	content: '';
+	display: block;
+	box-sizing: border-box;
+	transition-property: background-color, border-color;
+	transition-duration: 0.25s;
+}
+
+.cSelect__search-icon::before {
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	border: 2px solid #999;
+}
+
+.cSelect__search-icon::after {
+	margin: 0 auto;
+	width: 2px;
+	height: 6px;
+	background-color: #999;
+}
+
+.cSelect__search-input:focus ~ .cSelect__search-icon::before {
+	border-color: #9226f4;
+}
+
+.cSelect__search-input:focus ~ .cSelect__search-icon::after {
+	background-color: #9226f4;
+}
+
+.cSelect__option {
+	padding: 16px 2em;
+	background: #fff;
+	border-top: 1px solid rgba(0, 0, 0, 0.05);
+	cursor: pointer;
+	font-size: 14px;
+	min-height: 17px;
+}
+
+.cSelect__option:hover {
+	background-color: rgb(236, 236, 236);
+}
+
+.cSelect__option.selected {
+	color: #fff;
+	background-color: #9226f4;
+}
+
+/* needs to be after selected */
+.cSelect__option.disabled {
+	color: #c6c6c6;
+	background-color: #f8f8f8;
+	cursor: not-allowed;
+}

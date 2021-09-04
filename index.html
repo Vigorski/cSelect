@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Custom select</title>
+		<link rel="stylesheet" href="assets/css/app.css" />
+    <script type="module" src="assets/js/app.js"></script>
+	</head>
+	<body>
+		<div class="container">
+			<form method="POST" action="">
+				<div class="form-group">
+					<div class="custom-select-wrapper">
+						<label for="c-select">Pick your fav line</label>
+						<select class="custom-select" name="testSelect" id="c-select" placeholder="Please select an option">
+							<option disabled selected value> -- select an option -- </option>
+							<option value="walls">The walls was shaking</option>
+							<option value="earth">The earth was quaking</option>
+							<option disabled value="mind">My mind was aching</option>
+							<option value="cause-you">Cause you</option>
+							<option value="shook">SHOOK ME ALL NIGHT LONG!</option>
+						</select>
+					</div>
+				</div>
+
+					<button type="submit">Submit this shit</button>
+			</form>
+		</div>
+	</body>
+</html>
