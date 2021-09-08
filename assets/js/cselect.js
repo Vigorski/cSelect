@@ -123,6 +123,7 @@ function initSearch(_this) {
 	_this.cSelectSearch.classList.add('cSelect__search');
 	_this.cSelectSearchInput.classList.add('cSelect__search-input');
 	cSelectSearchIcon.classList.add('cSelect__search-icon');
+	_this.animated && _this.cSelectSearch.classList.add('cSelect__search--animated');
 	_this.cSelectSearchInput.tabIndex = 0;
 
 	// Append children
@@ -143,7 +144,8 @@ function initOptions(_this, options) {
 		_this.cSelectResults.appendChild(option);
 
 		// update selected options here
-		option.addEventListener('click', function () {
+		// using mouse down instead of click due to use of blur for closing cSelect
+		option.addEventListener('mousedown', function () {
 			// prevent selecting disabled options
 			if (item.disabled) return;
 			_this.selectValue(item);
@@ -168,7 +170,7 @@ function getFormattedOptions(options) {
 function addEvents(_this) {
 	_this.cSelectSingle.addEventListener('click', () => {
 		_this.toggleDropdown(DROP_TOGGLE);
-		clearSearchQuery(_this);
+		_this.search && clearSearchQuery(_this);
 	});
 
 	_this.cSelect.addEventListener('blur', () => {
@@ -176,20 +178,21 @@ function addEvents(_this) {
 			// maybe use e.relatedTarget to avoid async
 			if (document.activeElement !== _this.cSelectSearchInput) {
 				_this.toggleDropdown(DROP_CLOSE);
-				clearSearchQuery(_this);
+				_this.search && clearSearchQuery(_this);
 			}
 		}, 0);
 	});
 
-	_this.cSelectSearchInput.addEventListener('blur', () => {
-		setTimeout(() => {
-			// maybe use e.relatedTarget to avoid async
-			if (document.activeElement !== _this.cSelect) {
-				_this.toggleDropdown(DROP_CLOSE);
-				clearSearchQuery(_this);
-			}
-		}, 0);
-	});
+	_this.search &&
+		_this.cSelectSearchInput.addEventListener('blur', () => {
+			setTimeout(() => {
+				// maybe use e.relatedTarget to avoid async
+				if (document.activeElement !== _this.cSelect) {
+					_this.toggleDropdown(DROP_CLOSE);
+					clearSearchQuery(_this);
+				}
+			}, 0);
+		});
 
 	_this.cSelect.addEventListener('keyup', (e) => {
 		switch (e.keyCode) {
@@ -220,16 +223,17 @@ function addEvents(_this) {
 		}
 	});
 
-	_this.cSelectSearchInput.addEventListener('keydown', (e) => {
-		switch (e.keyCode) {
-			case KEY_ENTER:
-				e.preventDefault();
-				clearSearchQuery(_this);
-				break;
-			default:
-				break;
-		}
-	});
+	_this.search &&
+		_this.cSelectSearchInput.addEventListener('keydown', (e) => {
+			switch (e.keyCode) {
+				case KEY_ENTER:
+					e.preventDefault();
+					clearSearchQuery(_this);
+					break;
+				default:
+					break;
+			}
+		});
 }
 
 function getAvailableOption(_this, operand) {
@@ -279,7 +283,7 @@ function showResults(_this, results) {
 	for (let option of results) {
 		option.hidden = false;
 	}
-	
+
 	initOptions(_this, results);
 }
 
