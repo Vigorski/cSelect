@@ -20,8 +20,8 @@ export default class CSelect {
 	constructor(select, features) {
 		this.animated = features?.animated ?? true;
 		this.search = features?.search ?? true;
-		this.select = select;
-		this.options = getFormattedOptions(select.children);
+		this.select = isElement(select) ? select : document.querySelector(select);
+		this.options = getFormattedOptions(this.select.children);
 		this.cSelect = document.createElement('div');
 		this.cSelectSingle = document.createElement('div');
 		this.cSelectDrop = document.createElement('div');
@@ -109,7 +109,9 @@ function init(_this) {
 	_this.cSelectSingle.appendChild(cSelectLabel);
 	_this.cSelectSingle.appendChild(cSelectLabelArrow);
 	_this.cSelect.appendChild(_this.cSelectSingle);
-	if (_this.search) initSearch(_this);
+	if (_this.search) {
+		initSearch(_this);
+	}
 	_this.cSelectDrop.appendChild(_this.cSelectResults);
 	_this.cSelect.appendChild(_this.cSelectDrop);
 	_this.select.after(_this.cSelect);
@@ -155,16 +157,16 @@ function initOptions(_this, options) {
 }
 
 function getFormattedOptions(options) {
-	return [...options].map((optionEle) => {
-		return {
+	return Array.from(options).map((optionEle) =>
+		({
 			value: optionEle.value ?? '',
 			label: optionEle.label ?? '',
 			selected: optionEle.selected ?? false,
 			disabled: optionEle.disabled ?? false,
 			hidden: false,
 			element: optionEle ?? null,
-		};
-	});
+		})
+	);
 }
 
 function addEvents(_this) {
@@ -175,7 +177,6 @@ function addEvents(_this) {
 
 	_this.cSelect.addEventListener('blur', () => {
 		setTimeout(() => {
-			// maybe use e.relatedTarget to avoid async
 			if (document.activeElement !== _this.cSelectSearchInput) {
 				_this.toggleDropdown(DROP_CLOSE);
 				_this.search && clearSearchQuery(_this);
@@ -186,7 +187,6 @@ function addEvents(_this) {
 	_this.search &&
 		_this.cSelectSearchInput.addEventListener('blur', () => {
 			setTimeout(() => {
-				// maybe use e.relatedTarget to avoid async
 				if (document.activeElement !== _this.cSelect) {
 					_this.toggleDropdown(DROP_CLOSE);
 					clearSearchQuery(_this);
@@ -240,10 +240,15 @@ function getAvailableOption(_this, operand) {
 	const currentIndex = _this.selectedOptionIndex;
 	let availableIndex = null;
 
+	// this does not loop through the whole list
+	// rather the list is being used as a finite max number necessary for changing between options
+	// it will only iterate until reaching an eligible option
+	// and its better than while(true){} :)
 	for (let i = 1; i < _this.options.length; i++) {
 		if (operand === OPERAND_ADD) availableIndex = _this.options[currentIndex + i];
 		if (operand === OPERAND_SUBTRACT) availableIndex = _this.options[currentIndex - i];
 		if (availableIndex?.disabled || availableIndex?.hidden) continue;
+		// returns undefined if nothing found
 		return availableIndex;
 	}
 }
@@ -295,4 +300,11 @@ function hideResults(_this) {
 	while (_this.cSelectResults.firstChild) {
 		_this.cSelectResults.removeChild(_this.cSelectResults.lastChild);
 	}
+}
+
+
+function isElement(element) {
+	// which one is better?
+	return typeof element === "object" && typeof element.nodeType === "number" && element.nodeType === 1;
+	//return element instanceof Element || element instanceof HTMLDocument;  
 }

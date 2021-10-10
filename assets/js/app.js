@@ -5,7 +5,7 @@ const cSelectOptions = {
   search: true,
 }
 
-const select = document.querySelector('.custom-select');
+const select = '.custom-select';
 const cSelect = new CSelect(select, cSelectOptions);
 
 console.log(cSelect)
