@@ -104,6 +104,7 @@ input {
 	left: 0;
 	top: 57px;
 	transition: height, 0.25s;
+	z-index: 1000;
 }
 
 .cSelect__results {

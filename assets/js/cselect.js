@@ -17,9 +17,9 @@ const OPERAND_ADD = 'add';
 const OPERAND_SUBTRACT = 'subtract';
 
 export default class CSelect {
-	constructor(select, features) {
-		this.animated = features?.animated ?? true;
-		this.search = features?.search ?? true;
+	constructor(select, settings) {
+		this.animated = settings?.animated ?? true;
+		this.search = settings?.search ?? true;
 		this.select = isElement(select) ? select : document.querySelector(select);
 		this.selectIsDisabled = this.select.disabled ? true : false;
 		this.options = getFormattedOptions(this.select.children);
@@ -115,7 +115,7 @@ function init(_this) {
 	_this.cSelectDrop.appendChild(_this.cSelectResults);
 	_this.cSelect.appendChild(_this.cSelectDrop);
 	_this.select.after(_this.cSelect);
-	if(_this.select.disabled) {
+	if (_this.select.disabled) {
 		_this.cSelect.classList.add('cSelect__disabled');
 	}
 	_this.select.style.display = 'none';
@@ -163,16 +163,14 @@ function initOptions(_this) {
 }
 
 function getFormattedOptions(options) {
-	return Array.from(options).map((optionEle) =>
-		({
-			value: optionEle.value ?? '',
-			label: optionEle.label ?? '',
-			selected: optionEle.selected ?? false,
-			disabled: optionEle.disabled ?? false,
-			hidden: false,
-			element: optionEle ?? null,
-		})
-	);
+	return Array.from(options).map((optionEle) => ({
+		value: optionEle.value ?? '',
+		label: optionEle.label ?? '',
+		selected: optionEle.selected ?? false,
+		disabled: optionEle.disabled ?? false,
+		hidden: false,
+		element: optionEle ?? null,
+	}));
 }
 
 function addEvents(_this) {
@@ -211,6 +209,7 @@ function addEvents(_this) {
 				const nextOption = getAvailableOption(_this, OPERAND_ADD);
 				nextOption && _this.selectValue(nextOption);
 				_this.toggleDropdown(DROP_OPEN);
+				console.log(_this.options);
 				break;
 			case KEY_SPACE:
 				if (document.activeElement === _this.cSelectSearchInput) break;
@@ -308,14 +307,13 @@ function hideResults(_this) {
 	}
 }
 
-
 function isElement(element) {
 	// which one is better?
-	return typeof element === "object" && typeof element.nodeType === "number" && element.nodeType === 1;
-	//return element instanceof Element || element instanceof HTMLDocument;  
+	return typeof element === 'object' && typeof element.nodeType === 'number' && element.nodeType === 1;
+	//return element instanceof Element || element instanceof HTMLDocument;
 }
 
-function setFocusOnElements(_this){
+function setFocusOnElements(_this) {
 	// make select focusable, but not dropdown
 	_this.cSelect.tabIndex = 0;
 	_this.cSelectDrop.tabIndex = -1;
