@@ -21,6 +21,7 @@ export default class CSelect {
 		this.animated = features?.animated ?? true;
 		this.search = features?.search ?? true;
 		this.select = isElement(select) ? select : document.querySelector(select);
+		this.selectIsDisabled = this.select.disabled ? true : false;
 		this.options = getFormattedOptions(this.select.children);
 		this.cSelect = document.createElement('div');
 		this.cSelectSingle = document.createElement('div');
@@ -30,12 +31,11 @@ export default class CSelect {
 		this.cSelectResults = document.createElement('ul');
 
 		init(this);
-		addEvents(this);
-
-		// make select focusable, but not dropdown
-		this.cSelect.tabIndex = 0;
-		this.cSelectDrop.tabIndex = -1;
-		this.cSelectResults.tabIndex = -1;
+		// Dont add events and focus if select is disabled
+		if (!this.selectIsDisabled) {
+			addEvents(this);
+			setFocusOnElements(this);
+		}
 	}
 
 	get selectedOption() {
@@ -105,7 +105,7 @@ function init(_this) {
 	cSelectLabel.innerText = _this.selectedOption.label;
 
 	// Append children label, arrow + options
-	initOptions(_this, _this.options);
+	initOptions(_this);
 	_this.cSelectSingle.appendChild(cSelectLabel);
 	_this.cSelectSingle.appendChild(cSelectLabelArrow);
 	_this.cSelect.appendChild(_this.cSelectSingle);
@@ -115,6 +115,9 @@ function init(_this) {
 	_this.cSelectDrop.appendChild(_this.cSelectResults);
 	_this.cSelect.appendChild(_this.cSelectDrop);
 	_this.select.after(_this.cSelect);
+	if(_this.select.disabled) {
+		_this.cSelect.classList.add('cSelect__disabled');
+	}
 	_this.select.style.display = 'none';
 }
 
@@ -134,8 +137,11 @@ function initSearch(_this) {
 	_this.cSelectDrop.appendChild(_this.cSelectSearch);
 }
 
-function initOptions(_this, options) {
-	options.forEach((item) => {
+function initOptions(_this) {
+	// Dont add options if select is disabled
+	if (_this.selectIsDisabled) return;
+
+	_this.options.forEach((item) => {
 		if (item.hidden) return;
 		const option = document.createElement('li');
 		option.classList.add('cSelect__option');
@@ -307,4 +313,11 @@ function isElement(element) {
 	// which one is better?
 	return typeof element === "object" && typeof element.nodeType === "number" && element.nodeType === 1;
 	//return element instanceof Element || element instanceof HTMLDocument;  
+}
+
+function setFocusOnElements(_this){
+	// make select focusable, but not dropdown
+	_this.cSelect.tabIndex = 0;
+	_this.cSelectDrop.tabIndex = -1;
+	_this.cSelectResults.tabIndex = -1;
 }

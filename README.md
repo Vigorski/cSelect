@@ -43,6 +43,7 @@ search | boolean | true | Allows searching available options (including disabled
 1. Add multiselect options features
 2. Options with groups
 3. Fix bug with lingering focus on search input when dropdown is hidden
+4. Link an external trigger dropdown element
 
 ------
 #### Example
