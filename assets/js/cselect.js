@@ -1,11 +1,12 @@
 // KEYCODES FOR KEYBOARD CHARACTERS
-const KEY_TAB = 9;
-const KEY_SHIFT = 16;
-const KEY_SPACE = 32;
-const KEY_ENTER = 13;
-const KEY_UP = 38;
-const KEY_DOWN = 40;
-const KEY_ESC = 27;
+const KEY_TAB = 'Tab';
+const KEY_SHIFT_LEFT = 'ShiftLeft';
+const KEY_SHIFT_RIGHT = 'ShiftRight';
+const KEY_SPACE = 'Space';
+const KEY_ENTER = 'Enter';
+const KEY_UP = 'ArrowUp';
+const KEY_DOWN = 'ArrowDown';
+const KEY_ESC = 'Escape';
 
 // ALIAS FOR DROPDOWN ACTIONS
 const DROP_OPEN = 'add';
@@ -20,21 +21,20 @@ export default class CSelect {
 	constructor(select, settings) {
 		this.animated = settings?.animated ?? true;
 		this.search = settings?.search ?? true;
-		this.select = isElement(select) ? select : document.querySelector(select);
+		this.select = this.isElement(select) ? select : document.querySelector(select);
 		this.selectIsDisabled = this.select.disabled ? true : false;
-		this.options = getFormattedOptions(this.select.children);
+		this.options = this.getFormattedOptions(this.select.children);
 		this.cSelect = document.createElement('div');
 		this.cSelectSingle = document.createElement('div');
 		this.cSelectDrop = document.createElement('div');
-		this.cSelectSearch = this.search ? document.createElement('div') : null;
 		this.cSelectSearchInput = this.search ? document.createElement('input') : null;
 		this.cSelectResults = document.createElement('ul');
 
-		init(this);
+		this.init();
 		// Dont add events and focus if select is disabled
 		if (!this.selectIsDisabled) {
-			addEvents(this);
-			setFocusOnElements(this);
+			this.addEvents();
+			this.setFocusOnElements(this);
 		}
 	}
 
@@ -46,7 +46,162 @@ export default class CSelect {
 		return this.options.indexOf(this.selectedOption);
 	}
 
-	// instance accessible method to select new value
+	init() {
+		const cSelectLabel = document.createElement('span');
+		const cSelectLabelArrow = document.createElement('div');
+
+		// Add classes and text
+		this.cSelectSingle.classList.add('cSelect__default');
+		this.cSelect.classList.add('cSelect');
+		this.cSelectResults.classList.add('cSelect__results');
+		this.cSelectDrop.classList.add('cSelect__drop');
+		cSelectLabelArrow.classList.add('cSelect__label-arrow');
+		cSelectLabel.classList.add('cSelect__label');
+		cSelectLabel.innerText = this.selectedOption.label;
+
+		// Append children label, arrow + options
+		this.initOptions();
+		this.cSelectSingle.appendChild(cSelectLabel);
+		this.cSelectSingle.appendChild(cSelectLabelArrow);
+		this.cSelect.appendChild(this.cSelectSingle);
+		if (this.search) {
+			this.initSearch();
+		}
+		this.cSelectDrop.appendChild(this.cSelectResults);
+		this.cSelect.appendChild(this.cSelectDrop);
+		this.select.after(this.cSelect);
+		if (this.select.disabled) {
+			this.cSelect.classList.add('cSelect__disabled');
+		}
+		this.select.style.display = 'none';
+	}
+
+	initSearch() {
+		const cSelectSearch = document.createElement('div');
+		const cSelectSearchIcon = document.createElement('div');
+
+		// Add classes
+		cSelectSearch.classList.add('cSelect__search');
+		this.cSelectSearchInput.classList.add('cSelect__search-input');
+		cSelectSearchIcon.classList.add('cSelect__search-icon');
+		this.animated && cSelectSearch.classList.add('cSelect__search--animated');
+		this.cSelectSearchInput.tabIndex = 0;
+
+		// Append children
+		cSelectSearch.appendChild(this.cSelectSearchInput);
+		cSelectSearch.appendChild(cSelectSearchIcon);
+		this.cSelectDrop.appendChild(cSelectSearch);
+	}
+
+	initOptions(options = this.options) {
+		// Dont add options if select is disabled
+		if (this.selectIsDisabled) return;
+		
+		// bind this to object due to event listener
+		const _this = this;
+
+		options.forEach((item) => {
+			if (item.hidden) return;
+
+			const option = document.createElement('li');
+			option.classList.add('cSelect__option');
+			option.classList.toggle('selected', item.selected);
+			option.classList.toggle('disabled', item.disabled);
+			option.dataset.value = item.value;
+			option.innerText = item.label;
+			_this.cSelectResults.appendChild(option);
+
+			// update selected options here
+			// using mouse down instead of click due to use of blur for closing cSelect
+			option.addEventListener('mousedown', function () {
+				// prevent selecting disabled options
+				if (item.disabled) return;
+				_this.selectValue(item);
+				_this.toggleDropdown(DROP_CLOSE);
+			});
+		});
+	}
+
+	getFormattedOptions(options = this.options) {
+		return Array.from(options).map((optionEle) => ({
+			value: optionEle.value ?? '',
+			label: optionEle.label ?? '',
+			selected: optionEle.selected ?? false,
+			disabled: optionEle.disabled ?? false,
+			hidden: false,
+			element: optionEle ?? null,
+		}));
+	}
+
+	addEvents() {
+		this.cSelectSingle.addEventListener('click', () => {
+			this.toggleDropdown(DROP_TOGGLE);
+			this.search && this.clearSearchQuery();
+		});
+
+		this.cSelect.addEventListener('blur', () => {
+			setTimeout(() => {
+				if (document.activeElement !== this.cSelectSearchInput) {
+					this.toggleDropdown(DROP_CLOSE);
+					this.search && this.clearSearchQuery();
+				}
+			}, 0);
+		});
+
+		this.search &&
+			this.cSelectSearchInput.addEventListener('blur', () => {
+				setTimeout(() => {
+					if (document.activeElement !== this.cSelect) {
+						this.toggleDropdown(DROP_CLOSE);
+						this.clearSearchQuery();
+					}
+				}, 0);
+			});
+
+		this.cSelect.addEventListener('keyup', (e) => {
+			switch (e.code) {
+				case KEY_UP:
+					const prevOption = this.getAvailableOption(OPERAND_SUBTRACT);
+					prevOption && this.selectValue(prevOption);
+					this.toggleDropdown(DROP_OPEN);
+					break;
+				case KEY_DOWN:
+					const nextOption = this.getAvailableOption(OPERAND_ADD);
+					nextOption && this.selectValue(nextOption);
+					this.toggleDropdown(DROP_OPEN);
+					break;
+				case KEY_SPACE:
+					if (document.activeElement === this.cSelectSearchInput) break;
+					this.toggleDropdown(DROP_TOGGLE);
+					break;
+				case KEY_ENTER:
+				case KEY_ESC:
+					this.toggleDropdown(DROP_CLOSE);
+					break;
+				case KEY_TAB:
+				case KEY_SHIFT_LEFT:
+				case KEY_SHIFT_RIGHT:
+					break;
+				default:
+					this.searchQuery(this.cSelectSearchInput);
+					break;
+			}
+		});
+
+		// using keydown here to stop form from making request
+		this.search &&
+			this.cSelectSearchInput.addEventListener('keydown', (e) => {
+				switch (e.code) {
+					case KEY_ENTER:
+						e.preventDefault();
+						this.clearSearchQuery();
+						break;
+					default:
+						break;
+				}
+			});
+	}
+
 	selectValue(newSelected) {
 		const oldSelected = this.selectedOption;
 		const newSelectedDOM = this.cSelectResults.querySelector(`[data-value="${newSelected.value}"]`);
@@ -66,11 +221,10 @@ export default class CSelect {
 	}
 
 	toggleDropdown(type) {
+		// .scrollHeight gets actual height of container, even if hidden
 		const isOpen = this.cSelectDrop.classList.contains('cSelect__drop--open');
 		const animatedDropHeight = this.animated ? `${this.cSelectResults.scrollHeight}px` : 'auto';
 		this.cSelectDrop.classList[type]('cSelect__drop--open');
-
-		// #TODO: fix tab focus (search remains focusable)
 
 		switch (type) {
 			case DROP_TOGGLE:
@@ -89,233 +243,84 @@ export default class CSelect {
 				break;
 		}
 	}
-}
 
-function init(_this) {
-	const cSelectLabel = document.createElement('span');
-	const cSelectLabelArrow = document.createElement('div');
+	getAvailableOption(operand) {
+		const currentIndex = this.selectedOptionIndex;
+		let availableIndex = null;
 
-	// Add classes and text
-	_this.cSelectSingle.classList.add('cSelect__default');
-	_this.cSelect.classList.add('cSelect');
-	_this.cSelectResults.classList.add('cSelect__results');
-	_this.cSelectDrop.classList.add('cSelect__drop');
-	cSelectLabelArrow.classList.add('cSelect__label-arrow');
-	cSelectLabel.classList.add('cSelect__label');
-	cSelectLabel.innerText = _this.selectedOption.label;
-
-	// Append children label, arrow + options
-	initOptions(_this);
-	_this.cSelectSingle.appendChild(cSelectLabel);
-	_this.cSelectSingle.appendChild(cSelectLabelArrow);
-	_this.cSelect.appendChild(_this.cSelectSingle);
-	if (_this.search) {
-		initSearch(_this);
-	}
-	_this.cSelectDrop.appendChild(_this.cSelectResults);
-	_this.cSelect.appendChild(_this.cSelectDrop);
-	_this.select.after(_this.cSelect);
-	if (_this.select.disabled) {
-		_this.cSelect.classList.add('cSelect__disabled');
-	}
-	_this.select.style.display = 'none';
-}
-
-function initSearch(_this) {
-	const cSelectSearchIcon = document.createElement('div');
-
-	// Add classes
-	_this.cSelectSearch.classList.add('cSelect__search');
-	_this.cSelectSearchInput.classList.add('cSelect__search-input');
-	cSelectSearchIcon.classList.add('cSelect__search-icon');
-	_this.animated && _this.cSelectSearch.classList.add('cSelect__search--animated');
-	_this.cSelectSearchInput.tabIndex = 0;
-
-	// Append children
-	_this.cSelectSearch.appendChild(_this.cSelectSearchInput);
-	_this.cSelectSearch.appendChild(cSelectSearchIcon);
-	_this.cSelectDrop.appendChild(_this.cSelectSearch);
-}
-
-function initOptions(_this) {
-	// Dont add options if select is disabled
-	if (_this.selectIsDisabled) return;
-
-	_this.options.forEach((item) => {
-		if (item.hidden) return;
-		const option = document.createElement('li');
-		option.classList.add('cSelect__option');
-		option.classList.toggle('selected', item.selected);
-		option.classList.toggle('disabled', item.disabled);
-		option.dataset.value = item.value;
-		option.innerText = item.label;
-		_this.cSelectResults.appendChild(option);
-
-		// update selected options here
-		// using mouse down instead of click due to use of blur for closing cSelect
-		option.addEventListener('mousedown', function () {
-			// prevent selecting disabled options
-			if (item.disabled) return;
-			_this.selectValue(item);
-			_this.toggleDropdown(DROP_CLOSE);
-		});
-	});
-}
-
-function getFormattedOptions(options) {
-	return Array.from(options).map((optionEle) => ({
-		value: optionEle.value ?? '',
-		label: optionEle.label ?? '',
-		selected: optionEle.selected ?? false,
-		disabled: optionEle.disabled ?? false,
-		hidden: false,
-		element: optionEle ?? null,
-	}));
-}
-
-function addEvents(_this) {
-	_this.cSelectSingle.addEventListener('click', () => {
-		_this.toggleDropdown(DROP_TOGGLE);
-		_this.search && clearSearchQuery(_this);
-	});
-
-	_this.cSelect.addEventListener('blur', () => {
-		setTimeout(() => {
-			if (document.activeElement !== _this.cSelectSearchInput) {
-				_this.toggleDropdown(DROP_CLOSE);
-				_this.search && clearSearchQuery(_this);
-			}
-		}, 0);
-	});
-
-	_this.search &&
-		_this.cSelectSearchInput.addEventListener('blur', () => {
-			setTimeout(() => {
-				if (document.activeElement !== _this.cSelect) {
-					_this.toggleDropdown(DROP_CLOSE);
-					clearSearchQuery(_this);
-				}
-			}, 0);
-		});
-
-	_this.cSelect.addEventListener('keyup', (e) => {
-		switch (e.keyCode) {
-			case KEY_UP:
-				const prevOption = getAvailableOption(_this, OPERAND_SUBTRACT);
-				prevOption && _this.selectValue(prevOption);
-				_this.toggleDropdown(DROP_OPEN);
-				break;
-			case KEY_DOWN:
-				const nextOption = getAvailableOption(_this, OPERAND_ADD);
-				nextOption && _this.selectValue(nextOption);
-				_this.toggleDropdown(DROP_OPEN);
-				console.log(_this.options);
-				break;
-			case KEY_SPACE:
-				if (document.activeElement === _this.cSelectSearchInput) break;
-				_this.toggleDropdown(DROP_TOGGLE);
-				break;
-			case KEY_ENTER:
-			case KEY_ESC:
-				_this.toggleDropdown(DROP_CLOSE);
-				break;
-			case KEY_TAB:
-			case KEY_SHIFT:
-				break;
-			default:
-				searchQuery(_this, _this.cSelectSearchInput);
-				break;
+		// this does not loop through the whole list
+		// rather the list is being used as a finite max number necessary for changing between options
+		// it will only iterate until reaching an eligible option
+		// and apparently its bad practice to use while(true){} :)
+		for (let i = 1; i < this.options.length; i++) {
+			if (operand === OPERAND_ADD) availableIndex = this.options[currentIndex + i];
+			if (operand === OPERAND_SUBTRACT) availableIndex = this.options[currentIndex - i];
+			if (availableIndex?.disabled || availableIndex?.hidden) continue;
+			// returns undefined if nothing found
+			return availableIndex;
 		}
-	});
+	}
 
-	_this.search &&
-		_this.cSelectSearchInput.addEventListener('keydown', (e) => {
-			switch (e.keyCode) {
-				case KEY_ENTER:
-					e.preventDefault();
-					clearSearchQuery(_this);
-					break;
-				default:
-					break;
-			}
+	searchQuery(searchInput) {
+		const formatedInputText = searchInput.value.toLowerCase();
+		const results = this.options.filter((item) => {
+			const formatedOptionText = item.label.toLowerCase();
+			// check if exists
+			return formatedOptionText.indexOf(formatedInputText) > -1;
 		});
-}
 
-function getAvailableOption(_this, operand) {
-	const currentIndex = _this.selectedOptionIndex;
-	let availableIndex = null;
+		if (results.length === 0) {
+			results.push({
+				value: '',
+				label: 'No results match your query',
+				selected: false,
+				disabled: true,
+				hidden: false,
+				element: null,
+			});
+		}
 
-	// this does not loop through the whole list
-	// rather the list is being used as a finite max number necessary for changing between options
-	// it will only iterate until reaching an eligible option
-	// and its better than while(true){} :)
-	for (let i = 1; i < _this.options.length; i++) {
-		if (operand === OPERAND_ADD) availableIndex = _this.options[currentIndex + i];
-		if (operand === OPERAND_SUBTRACT) availableIndex = _this.options[currentIndex - i];
-		if (availableIndex?.disabled || availableIndex?.hidden) continue;
-		// returns undefined if nothing found
-		return availableIndex;
-	}
-}
-
-function searchQuery(_this, searchInput) {
-	const formatedInputText = searchInput.value.toLowerCase();
-	const results = _this.options.filter((item) => {
-		const formatedOptionText = item.label.toLowerCase();
-		return formatedOptionText.indexOf(formatedInputText) > -1;
-	});
-
-	if (results.length === 0) {
-		results.push({
-			value: '',
-			label: 'No results match your query',
-			selected: false,
-			disabled: true,
-			hidden: false,
-			element: null,
-		});
+		this.hideResults();
+		this.showResults(results);
 	}
 
-	hideResults(_this);
-	showResults(_this, results);
-}
+	clearSearchQuery() {
+		const searchInput = this.cSelectSearchInput;
 
-function clearSearchQuery(_this) {
-	const searchInput = _this.cSelectSearchInput;
-
-	if (_this.search && searchInput.value.length > 0) {
-		searchInput.value = '';
-		searchQuery(_this, searchInput);
-	}
-}
-
-function showResults(_this, results) {
-	for (let option of results) {
-		option.hidden = false;
+		if (this.search && searchInput.value.length > 0) {
+			searchInput.value = '';
+			this.searchQuery(searchInput);
+		}
 	}
 
-	initOptions(_this, results);
-}
+	showResults(results) {
+		for (let option of results) {
+			option.hidden = false;
+		}
 
-function hideResults(_this) {
-	for (let option of _this.options) {
-		option.hidden = true;
+		this.initOptions(results);
 	}
 
-	while (_this.cSelectResults.firstChild) {
-		_this.cSelectResults.removeChild(_this.cSelectResults.lastChild);
+	hideResults() {
+		for (let option of this.options) {
+			option.hidden = true;
+		}
+
+		while (this.cSelectResults.firstChild) {
+			this.cSelectResults.removeChild(this.cSelectResults.lastChild);
+		}
 	}
-}
 
-function isElement(element) {
-	// which one is better?
-	return typeof element === 'object' && typeof element.nodeType === 'number' && element.nodeType === 1;
-	//return element instanceof Element || element instanceof HTMLDocument;
-}
+	isElement(element) {
+		// which one is better?
+		return typeof element === 'object' && typeof element.nodeType === 'number' && element.nodeType === 1;
+		//return element instanceof Element || element instanceof HTMLDocument;
+	}
 
-function setFocusOnElements(_this) {
-	// make select focusable, but not dropdown
-	_this.cSelect.tabIndex = 0;
-	_this.cSelectDrop.tabIndex = -1;
-	_this.cSelectResults.tabIndex = -1;
+	setFocusOnElements() {
+		// make select focusable, but not dropdown
+		this.cSelect.tabIndex = 0;
+		this.cSelectDrop.tabIndex = -1;
+		this.cSelectResults.tabIndex = -1;
+	}
 }
