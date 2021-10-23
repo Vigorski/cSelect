@@ -43,7 +43,7 @@ The added css file is there only as a starting point, but feel free to change or
 ```
 
 ## Settings
-In the current version, the behaviour of the custom select plugin is quite limited and you could modify the following optional properties:
+In the current version, the behaviour of the CSelect plugin is quite limited and you could modify the following optional properties:
 
 Option | Type | Default | Description
 ------ | ---- | ------- | -----------
@@ -51,12 +51,23 @@ animated | boolean | true | Toggles expanding dropdown and search items with ani
 search | boolean | true | Allows searching available options (including disabled ones)
 ------
 
+## Methods
+Methods can be called on CSelect instances.
+
+For example, in some situations, it is necessary to make dynamic changes to the original select (add/remove options). After those changes you would need to call the inherited 'update' method of your particular instance and it will automatically do the rest of the job for you:
+
+```
+  YourCSelectObject.prototype.update();
+```
+
+Method | Argument | Description
+------ | ---- | ------------------
+update | none | Automatically collects the changed original select element and updates the state of CSelect
+------
+
 ## To-do sometime in the undefined future
 1. Add multiselect options features
-2. Options with groups
-3. Fix bug with lingering focus on search input when dropdown is hidden
-4. Link an external trigger dropdown element
-5. Update options when original select has been changed dynamically
+2. Fix bug with lingering focus on search input when dropdown is hidden
 
 ------
 #### Example
