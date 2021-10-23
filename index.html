@@ -10,9 +10,9 @@
 	</head>
 	<body>
 		<div class="container">
-			<h2>CSelect initialized on multiple select elements</h2>
 			<form method="POST" action="">
 				<div class="form-group">
+					<h2>CSelect initialized on multiple select elements</h2>
 					<div class="custom-select-wrapper">
 						<label for="fearOfTheDark">Fear of the Dark</label>
 						<select class="custom-select" name="fearOfTheDark" id="fearOfTheDark" placeholder="Please select an option">
@@ -48,12 +48,12 @@
 				<button type="submit">Submit</button>
 			</form>
 
-			<h2>Fake async fn to change content of select and update CSelect</h2>
-			<div class="form-wrapper">
-				<form method="POST" action="">
-					<div class="form-group">
-						<div class="custom-select-wrapper">
-							<label for="thunderstruck">Thunderstruck</label>
+			<form method="POST" action="">
+				<div class="form-group">
+					<h2>Add new options and update CSelect</h2>
+					<div class="custom-select-wrapper">
+						<label for="thunderstruck">Thunderstruck</label>
+						<div class="form-wrapper">
 							<select class="thunderstruck-select" name="thunderstruck" id="thunderstruck" placeholder="Please select an option">
 								<option disabled selected value> -- select an option -- </option>
 								<option value="walls">The walls were shaking</option>
@@ -62,12 +62,12 @@
 								<option value="cause-you">Cause you</option>
 								<option value="shook">SHOOK ME ALL NIGHT LONG!</option>
 							</select>
+							<button id="updateSelect" type="button">Add content</button>
 						</div>
 					</div>
-					<button type="submit">Submit</button>
-				</form>
-				<button id="updateSelect" type="button">Add content</button>
-			</div>
+				</div>
+				<button type="submit">Submit</button>
+			</form>
 		</div>
 	</body>
 </html>

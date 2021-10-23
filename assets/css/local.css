@@ -55,7 +55,6 @@ button {
 	border-radius: 3px;
 	background: #9226f4;
   cursor: pointer;
-  margin-top: 4px;
 }
 
 .form-wrapper {
@@ -63,7 +62,8 @@ button {
 	align-items: center
 }
 
-.form-wrapper form {
+.form-wrapper .thunderstruck-select,
+.form-wrapper .cSelect {
 	flex: 1;
 	margin-right: 30px;
 }
