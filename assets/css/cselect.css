@@ -1,50 +1,3 @@
-html,
-body {
-	margin: 0;
-	height: 100%;
-}
-
-body {
-	background: linear-gradient(135deg, #f7cac9 0%, #92a8d1 100%) no-repeat;
-	font-family: 'Arial', sans-serif;
-	letter-spacing: 1px;
-	color: #444;
-	box-sizing: border-box;
-}
-
-ul,
-ol {
-	padding: 0;
-	margin: 0;
-	list-style: none;
-}
-
-.container {
-	max-width: 1280px;
-	margin: 0 auto;
-	padding: 0 20px;
-}
-
-form {
-	display: flex;
-	flex-direction: column;
-}
-
-.form-group {
-	margin: 30px 0;
-}
-
-input {
-	font-family: 'Arial', sans-serif;
-	letter-spacing: 1px;
-	color: #444;
-}
-
-.custom-select-wrapper label {
-	display: block;
-	margin: 20px 0;
-}
-
 /* ///////////////////////////////////////////////////// */
 .cSelect {
 	position: relative;
@@ -110,6 +63,7 @@ input {
 .cSelect__results {
 	height: 100%;
 	overflow-y: auto;
+	max-height: 300px;
 }
 
 .cSelect__search {

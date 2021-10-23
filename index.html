@@ -4,25 +4,15 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Custom select</title>
+		<link rel="stylesheet" href="assets/css/local.css" />
 		<link rel="stylesheet" href="assets/css/cselect.css" />
     <script type="module" src="assets/js/app.js"></script>
 	</head>
 	<body>
 		<div class="container">
+			<h2>CSelect initialized on multiple select elements</h2>
 			<form method="POST" action="">
 				<div class="form-group">
-					<div class="custom-select-wrapper">
-						<label for="thunderstruck">Thunderstruck</label>
-						<select class="thunderstruck-select" name="thunderstruck" id="thunderstruck" placeholder="Please select an option">
-							<option disabled selected value> -- select an option -- </option>
-							<option value="walls">The walls were shaking</option>
-							<option value="earth">The earth was quaking</option>
-							<option disabled value="mind">My mind was aching</option>
-							<option value="cause-you">Cause you</option>
-							<option value="shook">SHOOK ME ALL NIGHT LONG!</option>
-						</select>
-					</div>
-
 					<div class="custom-select-wrapper">
 						<label for="fearOfTheDark">Fear of the Dark</label>
 						<select class="custom-select" name="fearOfTheDark" id="fearOfTheDark" placeholder="Please select an option">
@@ -55,8 +45,29 @@
 						</select>
 					</div>
 				</div>
-				<button type="submit">Submit list</button>
+				<button type="submit">Submit</button>
 			</form>
+
+			<h2>Fake async fn to change content of select and update CSelect</h2>
+			<div class="form-wrapper">
+				<form method="POST" action="">
+					<div class="form-group">
+						<div class="custom-select-wrapper">
+							<label for="thunderstruck">Thunderstruck</label>
+							<select class="thunderstruck-select" name="thunderstruck" id="thunderstruck" placeholder="Please select an option">
+								<option disabled selected value> -- select an option -- </option>
+								<option value="walls">The walls were shaking</option>
+								<option value="earth">The earth was quaking</option>
+								<option disabled value="mind">My mind was aching</option>
+								<option value="cause-you">Cause you</option>
+								<option value="shook">SHOOK ME ALL NIGHT LONG!</option>
+							</select>
+						</div>
+					</div>
+					<button type="submit">Submit</button>
+				</form>
+				<button id="updateSelect" type="button">Add content</button>
+			</div>
 		</div>
 	</body>
 </html>
