@@ -67,7 +67,6 @@ update | none | Automatically collects the changed original select element and u
 
 ## To-do sometime in the undefined future
 1. Add multiselect options features
-2. Fix bug with lingering focus on search input when dropdown is hidden
 
 ------
 #### Example

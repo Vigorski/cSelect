@@ -96,7 +96,7 @@ export default class CSelect {
 	initOptions(options = this.options) {
 		// Dont add options if select is disabled
 		if (this.selectIsDisabled) return;
-		
+
 		// bind this to object due to event listener
 		const _this = this;
 
@@ -236,14 +236,17 @@ export default class CSelect {
 			case DROP_TOGGLE:
 				this.cSelectDrop.style.height = isOpen ? 0 : animatedDropHeight;
 				this.search && !isOpen && this.cSelectSearchInput.focus();
+				if (this.search) this.cSelectSearchInput.tabIndex = isOpen ? -1 : 0;
 				break;
 			case DROP_CLOSE:
 				if (!isOpen) break;
 				this.cSelectDrop.style.height = 0;
+				if (this.search) this.cSelectSearchInput.tabIndex = -1;
 				break;
 			case DROP_OPEN:
 				if (isOpen) break;
 				this.cSelectDrop.style.height = animatedDropHeight;
+				if (this.search) this.cSelectSearchInput.tabIndex = 0;
 				break;
 			default:
 				break;
@@ -325,12 +328,13 @@ export default class CSelect {
 		// which one is better?
 		return typeof element === 'object' && typeof element.nodeType === 'number' && element.nodeType === 1;
 		//return element instanceof Element || element instanceof HTMLDocument;
-	}	
+	}
 
 	setFocusOnElements() {
 		// make select focusable, but not dropdown
 		this.cSelect.tabIndex = 0;
 		this.cSelectDrop.tabIndex = -1;
 		this.cSelectResults.tabIndex = -1;
+		if (this.search) this.cSelectSearchInput.tabIndex = -1;
 	}
 }
