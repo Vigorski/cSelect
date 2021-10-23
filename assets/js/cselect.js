@@ -122,6 +122,12 @@ export default class CSelect {
 		});
 	}
 
+	destroyOptions() {
+		while (this.cSelectResults.firstChild) {
+			this.cSelectResults.removeChild(this.cSelectResults.lastChild);
+		}
+	}
+
 	getFormattedOptions(options = this.options) {
 		return Array.from(options).map((optionEle) => ({
 			value: optionEle.value ?? '',
@@ -306,16 +312,20 @@ export default class CSelect {
 			option.hidden = true;
 		}
 
-		while (this.cSelectResults.firstChild) {
-			this.cSelectResults.removeChild(this.cSelectResults.lastChild);
-		}
+		this.destroyOptions();
+	}
+
+	update() {
+		this.options = this.getFormattedOptions(this.select.children);
+		this.destroyOptions();
+		this.initOptions();
 	}
 
 	isElement(element) {
 		// which one is better?
 		return typeof element === 'object' && typeof element.nodeType === 'number' && element.nodeType === 1;
 		//return element instanceof Element || element instanceof HTMLDocument;
-	}
+	}	
 
 	setFocusOnElements() {
 		// make select focusable, but not dropdown
