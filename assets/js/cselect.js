@@ -324,10 +324,26 @@ export default class CSelect {
 		this.initOptions();
 	}
 
-	isElement(element) {
-		// which one is better?
-		return typeof element === 'object' && typeof element.nodeType === 'number' && element.nodeType === 1;
-		//return element instanceof Element || element instanceof HTMLDocument;
+	isObject(obj) {
+		return obj === Object(obj);
+	}
+
+	isElement(ele) {
+		if (!ele) {
+			return false;
+		}
+
+		if (
+			ele instanceof Node ||
+			ele instanceof NodeList ||
+			ele instanceof HTMLCollection
+		) {
+			return true;
+		}
+
+		if (this.isObject(document) && ele === document) {
+			return true;
+		}
 	}
 
 	setFocusOnElements() {
